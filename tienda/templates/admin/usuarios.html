@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Gestionar Usuarios - Skincare Shop{% endblock %}
+
+{% block content %}
+<div class="container">
+    <header class="dashboard-header">
+        <h1>Panel de Administración</h1>
+        <p class="dashboard-subtitle">Skincare Shop - Sistema de gestión</p>
+        
+        <!-- Navegación fija - SIEMPRE VISIBLE -->
+        <nav class="sticky-nav">
+            <div class="nav-buttons">
+                <a href="{% url 'admin_dashboard' %}" class="nav-btn">Dashboard</a>
+                <a href="{% url 'admin_productos' %}" class="nav-btn">Productos</a>
+                <a href="{% url 'admin_pedidos' %}" class="nav-btn">Pedidos</a>
+                <a href="{% url 'admin_usuarios' %}" class="nav-btn active">Usuarios</a>
+            </div>
+        </nav>
+    </header>
+</div>
+
+<div class="container mt-4">
+    <h1 class="text-center mb-4">Gestionar Usuarios</h1>
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Todos los Usuarios</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Nombre Completo</th>
+                            <th>Email</th>
+                            <th>Fecha Registro</th>
+                            <th>Staff</th>
+                            <th>Activo</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for usuario in usuarios %}
+                        <tr>
+                            <td>{{ usuario.username }}</td>
+                            <td>{{ usuario.first_name }} {{ usuario.last_name }}</td>
+                            <td>{{ usuario.email }}</td>
+                            <td>{{ usuario.date_joined|date:"d/m/Y" }}</td>
+                            <td>
+                                <span class="badge {% if usuario.is_staff %}success{% else %}secondary{% endif %}">
+                                    {{ usuario.is_staff|yesno:"Sí,No" }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge {% if usuario.is_active %}success{% else %}danger{% endif %}">
+                                    {{ usuario.is_active|yesno:"Sí,No" }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline" disabled>Editar</button>
+                                    <button class="btn btn-outline-secondary" disabled>Ver Pedidos</button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">
+                                No hay usuarios registrados
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<!-- Aquí puedes agregar scripts específicos para usuarios si los necesitas -->
+{% endblock scripts %}

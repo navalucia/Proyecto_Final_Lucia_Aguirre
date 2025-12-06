@@ -1,0 +1,354 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestionar Productos - Skincare Shop{% endblock %}
+
+{% block content %}
+<div class="container">
+    <header class="dashboard-header">
+        <h1>Panel de Administración</h1>
+        <p class="dashboard-subtitle">Skincare Shop - Sistema de gestión</p>
+        
+        <!-- Navegación fija - SIEMPRE VISIBLE -->
+        <nav class="sticky-nav">
+            <div class="nav-buttons">
+                <a href="{% url 'admin_dashboard' %}" class="nav-btn">Dashboard</a>
+                <a href="{% url 'admin_productos' %}" class="nav-btn active">Productos</a>
+                <a href="{% url 'admin_pedidos' %}" class="nav-btn">Pedidos</a>
+                <a href="{% url 'admin_usuarios' %}" class="nav-btn">Usuarios</a>
+            </div>
+        </nav>
+    </header>
+</div>
+
+<div class="container mt-4">
+    <div class="section-header">
+        <h1>Gestionar Productos</h1>
+        <button type="button" class="btn-primary" onclick="abrirModalAgregar()">
+            + Agregar Producto
+        </button>
+    </div>
+
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Imagen</th>
+                    <th>Nombre</th>
+                    <th>Tipo</th>
+                    <th>Precio</th>
+                    <th>Stock</th>
+                    <!-- NUEVA COLUMNA: DESTACADO -->
+                    <th>Destacado</th>
+                    <th>Categoría</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for producto in productos %}
+                <tr>
+                    <td>
+                        {% if producto.foto %}
+                        <img src="{{ producto.foto.url }}" alt="{{ producto.nombre }}" class="product-image">
+                        {% else %}
+                        <span>Sin imagen</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ producto.nombre }}</td>
+                    <td>{{ producto.get_tipo_display }}</td>
+                    <td>${{ producto.precio }}</td>
+                    <td>
+                        <span class="badge {% if producto.stock < 10 %}danger{% else %}success{% endif %}">
+                            {{ producto.stock }}
+                        </span>
+                    </td>
+                    <!-- NUEVO: CAMPO DESTACADO -->
+                    <td>
+                        <form method="post" action="{% url 'toggle_destacado' producto.id %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm {% if producto.destacado %}btn-warning{% else %}btn-outline-warning{% endif %}">
+                                {{ producto.destacado|yesno:"★ Destacado,☆ Destacar" }}
+                            </button>
+                        </form>
+                    </td>
+                    <td>{{ producto.categoria.nombre }}</td>
+                    <td>
+                        <span class="badge {% if producto.activo %}success{% else %}danger{% endif %}">
+                            {{ producto.activo|yesno:"Activo,Inactivo" }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="btn-group">
+                            <a href="{% url 'admin_editar_producto' producto.id %}" class="btn btn-outline btn-sm">Editar</a>
+                            
+                            <!-- CAMBIO IMPORTANTE: Enlace directo a la página de confirmación -->
+                            <a href="{% url 'admin_eliminar_producto' producto.id %}" class="btn btn-danger btn-sm">
+                                Eliminar
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center p-4">
+                        No hay productos registrados
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Agregar Producto (Modificado para incluir opciones dinámicas) -->
+<div id="modalAgregar" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Agregar Nuevo Producto</h3>
+            <button type="button" class="modal-close" onclick="cerrarModalAgregar()">&times;</button>
+        </div>
+        <form method="post" action="{% url 'admin_productos' %}" enctype="multipart/form-data" class="form">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="form-group">
+                            <label for="id_tipo" class="form-label">Tipo de Producto:</label>
+                            <select name="tipo" id="id_tipo" class="form-select" required onchange="mostrarOpcionesEspecificas()">
+                                <option value="">Seleccionar...</option>
+                                <option value="maquillaje">Maquillaje</option>
+                                <option value="cuidado_solar">Cuidado Solar</option>
+                                <option value="mascarillas">Mascarillas</option>
+                                <option value="cremas">Cremas</option>
+                                <option value="limpiadores">Limpiadores Faciales</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group">
+                            <label for="id_categoria" class="form-label">Categoría:</label>
+                            <select name="categoria" id="id_categoria" class="form-select" required>
+                                <option value="">Seleccionar...</option>
+                                {% for categoria in categorias %}
+                                <option value="{{ categoria.id }}">{{ categoria.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Campo dinámico para opciones específicas (SUBCATEGORÍA) -->
+                <div class="form-group" id="opciones-especificas-container" style="display: none;">
+                    <label for="id_opcion_especifica" class="form-label" id="label-opcion-especifica">Subcategoría:</label>
+                    <select name="opcion_especifica" id="id_opcion_especifica" class="form-select">
+                        <!-- Las opciones se llenarán dinámicamente con JavaScript -->
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_nombre" class="form-label">Nombre:</label>
+                    <input type="text" name="nombre" id="id_nombre" class="form-control" placeholder="Nombre del producto" required>
+                </div>
+                
+                <div class="row">
+                    <div class="col-6">
+                        <div class="form-group">
+                            <label for="id_precio" class="form-label">Precio:</label>
+                            <input type="number" name="precio" id="id_precio" class="form-control" step="0.01" min="0" placeholder="0.00" required>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-group">
+                            <label for="id_stock" class="form-label">Stock:</label>
+                            <input type="number" name="stock" id="id_stock" class="form-control" min="0" placeholder="0" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_descripcion" class="form-label">Descripción:</label>
+                    <textarea name="descripcion" id="id_descripcion" class="form-control form-textarea" placeholder="Descripción del producto" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_foto" class="form-label">Imagen:</label>
+                    <input type="file" name="foto" id="id_foto" class="form-control" accept="image/*" required onchange="previewImage(this)">
+                    <img id="imagePreview" class="image-preview" src="" alt="Vista previa">
+                </div>
+                
+                <div class="form-check">
+                    <input type="checkbox" name="activo" id="id_activo" class="form-check-input" checked>
+                    <label for="id_activo" class="form-check-label">Producto Activo</label>
+                </div>
+
+                <!-- NUEVO: Checkbox para producto destacado -->
+                <div class="form-check mt-3">
+                    <input type="checkbox" name="destacado" id="id_destacado" class="form-check-input">
+                    <label for="id_destacado" class="form-check-label">Marcar como Producto Destacado</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="cerrarModalAgregar()">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Guardar Producto</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Solo lógica visual simple para el modal de Agregar
+function abrirModalAgregar() {
+    document.getElementById('modalAgregar').classList.add('show');
+}
+
+function cerrarModalAgregar() {
+    document.getElementById('modalAgregar').classList.remove('show');
+}
+
+function previewImage(input) {
+    const preview = document.getElementById('imagePreview');
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            preview.classList.add('show');
+        };
+        reader.readAsDataURL(input.files[0]);
+    } else {
+        preview.src = '';
+        preview.classList.remove('show');
+    }
+}
+
+// Función para mostrar opciones específicas según el tipo de producto
+function mostrarOpcionesEspecificas() {
+    const tipoSelect = document.getElementById('id_tipo');
+    const opcionesContainer = document.getElementById('opciones-especificas-container');
+    const opcionEspecificaSelect = document.getElementById('id_opcion_especifica');
+    const labelOpcion = document.getElementById('label-opcion-especifica');
+    
+    const tipoSeleccionado = tipoSelect.value;
+    
+    // Limpiar opciones anteriores
+    opcionEspecificaSelect.innerHTML = '';
+    opcionesContainer.style.display = 'none';
+    
+    // Definir opciones según el tipo
+    let opciones = [];
+    
+    switch(tipoSeleccionado) {
+        case 'maquillaje':
+            opciones = [
+                {value: 'base', text: 'Base de Maquillaje'},
+                {value: 'corrector', text: 'Corrector'},
+                {value: 'polvo', text: 'Polvo Facial'},
+                {value: 'rubor', text: 'Rubor'},
+                {value: 'iluminador', text: 'Iluminador'},
+                {value: 'bronceador', text: 'Bronceador'},
+                {value: 'sombras', text: 'Sombras de Ojos'},
+                {value: 'delineador', text: 'Delineador'},
+                {value: 'mascara_pestanas', text: 'Máscara de Pestañas'},
+                {value: 'cejas', text: 'Productos para Cejas'},
+                {value: 'labial', text: 'Labial'},
+                {value: 'gloss', text: 'Gloss'},
+                {value: 'lipstick', text: 'Lipstick'},
+                {value: 'lipstain', text: 'Lip Stain'},
+                {value: 'lip_liner', text: 'Lip Liner'},
+                {value: 'primer', text: 'Primer'},
+                {value: 'setting_spray', text: 'Setting Spray'},
+                {value: 'otro_maquillaje', text: 'Otro Producto de Maquillaje'}
+            ];
+            labelOpcion.textContent = 'Tipo de Maquillaje:';
+            break;
+            
+        case 'cuidado_solar':
+            opciones = [
+                {value: 'protector_facial', text: 'Protector Solar Facial'},
+                {value: 'protector_corporal', text: 'Protector Solar Corporal'},
+                {value: 'protector_spray', text: 'Protector en Spray'},
+                {value: 'protector_mineral', text: 'Protector Solar Mineral'},
+                {value: 'protector_quimico', text: 'Protector Solar Químico'},
+                {value: 'after_sun', text: 'After Sun'},
+                {value: 'bronceador', text: 'Bronceador'}
+            ];
+            labelOpcion.textContent = 'Tipo de Cuidado Solar:';
+            break;
+            
+        case 'mascarillas':
+            opciones = [
+                {value: 'arcilla', text: 'Mascarilla de Arcilla'},
+                {value: 'hidratante', text: 'Mascarilla Hidratante'},
+                {value: 'exfoliante', text: 'Mascarilla Exfoliante'},
+                {value: 'purificante', text: 'Mascarilla Purificante'},
+                {value: 'anti_edad', text: 'Mascarilla Anti-Edad'},
+                {value: 'calmante', text: 'Mascarilla Calmante'},
+                {value: 'iluminadora', text: 'Mascarilla Iluminadora'},
+                {value: 'sheet_mask', text: 'Sheet Mask'}
+            ];
+            labelOpcion.textContent = 'Tipo de Mascarilla:';
+            break;
+            
+        case 'cremas':
+            opciones = [
+                {value: 'hidratante', text: 'Crema Hidratante'},
+                {value: 'nutritiva', text: 'Crema Nutritiva'},
+                {value: 'anti_edad', text: 'Crema Anti-Edad'},
+                {value: 'contorno_ojos', text: 'Contorno de Ojos'},
+                {value: 'fps', text: 'Crema con FPS'},
+                {value: 'noche', text: 'Crema de Noche'},
+                {value: 'dia', text: 'Crema de Día'},
+                {value: 'calmante', text: 'Crema Calmante'}
+            ];
+            labelOpcion.textContent = 'Tipo de Crema:';
+            break;
+            
+        case 'limpiadores':
+            opciones = [
+                {value: 'gel', text: 'Gel Limpiador'},
+                {value: 'espuma', text: 'Espuma Limpiadora'},
+                {value: 'aceite', text: 'Aceite Limpiador'},
+                {value: 'balsamo', text: 'Bálsamo Limpiador'},
+                {value: 'agua_micelar', text: 'Agua Micelar'},
+                {value: 'exfoliante', text: 'Limpiador Exfoliante'},
+                {value: 'en_jabon', text: 'Jabón Facial'}
+            ];
+            labelOpcion.textContent = 'Tipo de Limpiador:';
+            break;
+    }
+    
+    // Si hay opciones para mostrar, crear el select
+    if (opciones.length > 0) {
+        // Agregar opción por defecto
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = 'Seleccionar...';
+        opcionEspecificaSelect.appendChild(defaultOption);
+        
+        // Agregar todas las opciones
+        opciones.forEach(opcion => {
+            const option = document.createElement('option');
+            option.value = opcion.value;
+            option.textContent = opcion.text;
+            opcionEspecificaSelect.appendChild(option);
+        });
+        
+        opcionesContainer.style.display = 'block';
+    }
+}
+
+// Cerrar modales al hacer click fuera
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('modal')) {
+        e.target.classList.remove('show');
+    }
+});
+
+// Inicializar el campo de opciones específicas si ya hay un tipo seleccionado
+document.addEventListener('DOMContentLoaded', function() {
+    const tipoSelect = document.getElementById('id_tipo');
+    if (tipoSelect.value) {
+        mostrarOpcionesEspecificas();
+    }
+});
+</script>
+{% endblock %}

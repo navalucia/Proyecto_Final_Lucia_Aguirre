@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalle del Pedido - Skincare Shop{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Detalle del Pedido #{{ pedido.id }}</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6>Información del Cliente</h6>
+                        <p><strong>Usuario:</strong> {{ pedido.usuario.username }}</p>
+                        <p><strong>Email:</strong> {{ pedido.usuario.email }}</p>
+                        <p><strong>Nombre:</strong> {{ pedido.usuario.first_name }} {{ pedido.usuario.last_name }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Información del Pedido</h6>
+                        <p><strong>Fecha:</strong> {{ pedido.fecha_pedido|date:"d/m/Y H:i" }}</p>
+                        <p><strong>Forma de Pago:</strong> {{ pedido.get_forma_pago_display }}</p>
+                        <p><strong>Domicilio:</strong> {{ pedido.domicilio }}</p>
+                    </div>
+                </div>
+
+                <h6>Productos del Pedido</h6>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Cantidad</th>
+                                <th>Precio Unitario</th>
+                                <th>Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for detalle in detalles %}
+                            <tr>
+                                <td>{{ detalle.producto.nombre }}</td>
+                                <td>{{ detalle.cantidad }}</td>
+                                <td>${{ detalle.precio_unitario }}</td>
+                                <td>${{ detalle.subtotal }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                                <td><strong>${{ pedido.total }}</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Actualizar Estado</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="id_estado" class="form-label">Estado del Pedido:</label>
+                        {{ form.estado }}
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_forma_pago" class="form-label">Forma de Pago:</label>
+                        {{ form.forma_pago }}
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_domicilio" class="form-label">Domicilio:</label>
+                        {{ form.domicilio }}
+                    </div>
+                    <button type="submit" class="btn btn-pink w-100">Actualizar Pedido</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

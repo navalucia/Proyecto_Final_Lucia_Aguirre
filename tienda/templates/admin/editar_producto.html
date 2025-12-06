@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Producto - Skincare Shop{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h2 class="text-center mb-4">Editar Producto: {{ producto.nombre }}</h2>
+    
+    <form method="post" enctype="multipart/form-data" class="form">
+        {% csrf_token %}
+        
+        <div class="row">
+            <div class="col-6">
+                <div class="form-group">
+                    <label for="id_tipo" class="form-label">Tipo de Producto:</label>
+                    <select name="tipo" id="id_tipo" class="form-select" required>
+                        <option value="">Seleccionar...</option>
+                        <option value="maquillaje" {% if form.tipo.value == 'maquillaje' %}selected{% endif %}>Maquillaje</option>
+                        <option value="cuidado_solar" {% if form.tipo.value == 'cuidado_solar' %}selected{% endif %}>Cuidado Solar</option>
+                        <option value="mascarillas" {% if form.tipo.value == 'mascarillas' %}selected{% endif %}>Mascarillas</option>
+                        <option value="cremas" {% if form.tipo.value == 'cremas' %}selected{% endif %}>Cremas</option>
+                        <option value="limpiadores" {% if form.tipo.value == 'limpiadores' %}selected{% endif %}>Limpiadores Faciales</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="form-group">
+                    <label for="id_categoria" class="form-label">Categoría:</label>
+                    <select name="categoria" id="id_categoria" class="form-select" required>
+                        <option value="">Seleccionar...</option>
+                        {% for categoria in form.categoria.field.queryset %}
+                        <option value="{{ categoria.id }}" {% if categoria.id == form.categoria.value %}selected{% endif %}>
+                            {{ categoria.nombre }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="id_nombre" class="form-label">Nombre:</label>
+            <input type="text" name="nombre" id="id_nombre" class="form-control" value="{{ form.nombre.value }}" required>
+        </div>
+        
+        <div class="row">
+            <div class="col-6">
+                <div class="form-group">
+                    <label for="id_precio" class="form-label">Precio:</label>
+                    <input type="number" name="precio" id="id_precio" class="form-control" step="0.01" min="0" value="{{ form.precio.value }}" required>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="form-group">
+                    <label for="id_stock" class="form-label">Stock:</label>
+                    <input type="number" name="stock" id="id_stock" class="form-control" min="0" value="{{ form.stock.value }}" required>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="id_descripcion" class="form-label">Descripción:</label>
+            <textarea name="descripcion" id="id_descripcion" class="form-control form-textarea" required>{{ form.descripcion.value }}</textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="id_foto" class="form-label">Imagen:</label>
+            <input type="file" name="foto" id="id_foto" class="form-control" accept="image/*" onchange="previewImage(this)">
+            {% if producto.foto %}
+            <div class="mt-2">
+                <img src="{{ producto.foto.url }}" alt="{{ producto.nombre }}" style="max-width: 200px; max-height: 200px;" class="image-preview show">
+                <p class="form-text">Imagen actual</p>
+            </div>
+            {% endif %}
+            <img id="imagePreview" class="image-preview" src="" alt="Vista previa">
+        </div>
+        
+        <div class="form-check">
+            <input type="checkbox" name="activo" id="id_activo" class="form-check-input" {% if form.activo.value %}checked{% endif %}>
+            <label for="id_activo" class="form-check-label">Producto Activo</label>
+        </div>
+        
+        <div class="d-flex justify-content-between mt-4">
+            <a href="{% url 'admin_productos' %}" class="btn btn-outline">Cancelar</a>
+            <button type="submit" class="btn btn-primary">Actualizar Producto</button>
+        </div>
+    </form>
+</div>
+
+<script>
+function previewImage(input) {
+    const preview = document.getElementById('imagePreview');
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            preview.classList.add('show');
+        };
+        reader.readAsDataURL(input.files[0]);
+    } else {
+        preview.src = '';
+        preview.classList.remove('show');
+    }
+}
+</script>
+{% endblock %}

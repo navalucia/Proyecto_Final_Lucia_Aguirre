@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Panel de Administración - Skincare Shop{% endblock %}
+
+{% block content %}
+<div class="container">
+    <header class="dashboard-header">
+        <h1>Panel de Administración</h1>
+        <p class="dashboard-subtitle">Skincare Shop - Sistema de gestión</p>
+        
+        <!-- Navegación fija - SIEMPRE VISIBLE -->
+        <nav class="sticky-nav">
+            <div class="nav-buttons">
+                <a href="{% url 'admin_dashboard' %}" class="nav-btn active">Dashboard</a>
+                <a href="{% url 'admin_productos' %}" class="nav-btn">Productos</a>
+                <a href="{% url 'admin_pedidos' %}" class="nav-btn">Pedidos</a>
+                <a href="{% url 'admin_usuarios' %}" class="nav-btn">Usuarios</a>
+            </div>
+        </nav>
+    </header>
+    
+    <!-- Sección Dashboard -->
+    <section id="dashboard" class="content-section active">
+        <!-- Grid de Estadísticas -->
+        <div class="dashboard-grid">
+            <div class="dashboard-card total-pedidos">
+                <h3>Total Pedidos</h3>
+                <div class="card-value">{{ total_pedidos }}</div>
+                <p class="card-description">Pedidos procesados</p>
+            </div>
+
+            <div class="dashboard-card pedidos-pendientes">
+                <h3>Pedidos Pendientes</h3>
+                <div class="card-value">{{ pedidos_pendientes }}</div>
+                <p class="card-description">En espera de procesamiento</p>
+            </div>
+
+            <div class="dashboard-card total-usuarios">
+                <h3>Total Usuarios</h3>
+                <div class="card-value">{{ total_usuarios }}</div>
+                <p class="card-description">Usuarios registrados</p>
+            </div>
+
+            <div class="dashboard-card stock-bajo">
+                <h3>Stock Bajo</h3>
+                <div class="card-value">{{ productos_bajo_stock }}</div>
+                <p class="card-description">Productos con stock bajo</p>
+            </div>
+        </div>
+        <!-- Historial -->
+        <div class="history-panel">
+            <h2>Últimos pedidos</h2>
+            <div class="history-list">
+                {% for pedido in pedidos_recientes %}
+                <div class="history-item">
+                    <span>Pedido #{{ pedido.id }} · {{ pedido.usuario.username }}</span>
+                    <span class="timestamp">{{ pedido.fecha_pedido|date:"d/m/Y H:i" }}</span>
+                </div>
+                {% empty %}
+                <div class="history-item">
+                    <span>No hay pedidos registrados todavía.</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function actualizarReloj() {
+    const marcador = document.getElementById('current-time');
+    if (marcador) {
+        marcador.textContent = new Date().toLocaleString();
+        setTimeout(actualizarReloj, 1000);
+    }
+})();
+</script>
+{% endblock %}

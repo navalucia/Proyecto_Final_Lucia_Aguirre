@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mis Pedidos - Skincare Shop{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center mb-4">📦 Mis Pedidos</h1>
+
+    {% if pedidos %}
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID Pedido</th>
+                    <th>Fecha</th>
+                    <th>Total</th>
+                    <th>Estado</th>
+                    <th>Método de Pago</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pedido in pedidos %}
+                <tr>
+                    <td>#{{ pedido.id }}</td>
+                    <td>{{ pedido.fecha_pedido|date:"d/m/Y H:i" }}</td>
+                    <td>${{ pedido.total }}</td>
+                    <td>
+                        <span class="badge 
+                            {% if pedido.estado == 'pendiente' %}badge-warning
+                            {% elif pedido.estado == 'confirmado' %}badge-primary
+                            {% elif pedido.estado == 'enviado' %}badge-info
+                            {% elif pedido.estado == 'entregado' %}badge-success
+                            {% elif pedido.estado == 'cancelado' %}badge-danger
+                            {% else %}badge-secondary{% endif %}">
+                            {{ pedido.get_estado_display }}
+                        </span>
+                    </td>
+                    <td>{{ pedido.get_forma_pago_display }}</td>
+                    <td>
+                        <div class="btn-group">
+                            <a href="{% url 'detalle_pedido' pedido.id %}" class="btn btn-outline btn-sm">
+                                👁️ Ver
+                            </a>
+                            {% if pedido.estado == 'pendiente' %}
+                            <form method="post" action="{% url 'cancelar_pedido' pedido.id %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger btn-sm" 
+                                        onclick="return confirm('¿Estás seguro de que quieres cancelar este pedido?')">
+                                    ❌ Cancelar
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center p-5">
+        <div class="mb-3">📭</div>
+        <h3>No tienes pedidos aún</h3>
+        <p class="text-muted">¡Realiza tu primer pedido y comienza a cuidar tu piel!</p>
+        <a href="{% url 'index' %}" class="btn btn-primary">🛍️ Comprar Ahora</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

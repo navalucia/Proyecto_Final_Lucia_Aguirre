@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Detalle Pedido #{{ pedido.id }} - Skincare Shop{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>📦 Detalle del Pedido #{{ pedido.id }}</h1>
+        <a href="{% url 'mis_pedidos' %}" class="btn btn-outline">
+            ← Volver a Mis Pedidos
+        </a>
+    </div>
+
+    <!-- Información del Pedido -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Información del Pedido</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>ID Pedido:</strong> #{{ pedido.id }}</p>
+                    <p><strong>Fecha:</strong> {{ pedido.fecha_pedido|date:"d/m/Y H:i" }}</p>
+                    <p><strong>Estado:</strong> 
+                        <span class="badge 
+                            {% if pedido.estado == 'pendiente' %}badge-warning
+                            {% elif pedido.estado == 'confirmado' %}badge-primary
+                            {% elif pedido.estado == 'enviado' %}badge-info
+                            {% elif pedido.estado == 'entregado' %}badge-success
+                            {% elif pedido.estado == 'cancelado' %}badge-danger
+                            {% else %}badge-secondary{% endif %}">
+                            {{ pedido.get_estado_display }}
+                        </span>
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Método de Pago:</strong> {{ pedido.get_forma_pago_display }}</p>
+                    <p><strong>Total:</strong> ${{ pedido.total }}</p>
+                    {% if pedido.direccion_calle %}
+                    <p><strong>Dirección:</strong> {{ pedido.domicilio }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Productos del Pedido -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">🛒 Productos del Pedido</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Precio Unitario</th>
+                            <th>Cantidad</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in detalles %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    {% if item.producto.foto %}
+                                    <img src="{{ item.producto.foto.url }}" alt="{{ item.producto.nombre }}" 
+                                        class="img-thumbnail me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                                    {% else %}
+                                    <div class="bg-light d-flex align-items-center justify-content-center me-3" 
+                                        style="width: 60px; height: 60px;">
+                                        🧴
+                                    </div>
+                                    {% endif %}
+                                    <div>
+                                        <strong>{{ item.producto.nombre }}</strong>
+                                        <br>
+                                        <small class="text-muted">
+                                            {{ item.producto.get_tipo_display }} - 
+                                            {{ item.producto.categoria.nombre }}
+                                        </small>
+                                        {% if item.producto.descripcion %}
+                                        <br><small class="text-muted">{{ item.producto.descripcion|truncatewords:8 }}</small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                            <td>${{ item.precio_unitario }}</td>
+                            <td>{{ item.cantidad }}</td>
+                            <td>${{ item.subtotal }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center py-4">
+                                <div class="text-muted">
+                                    📦 No hay productos en este pedido
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resumen de Totales -->
+    <div class="row justify-content-end">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Resumen del Pedido</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Subtotal -->
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Subtotal:</span>
+                        <span>${{ pedido.total }}</span>
+                    </div>
+                    
+                    <!-- IVA (16%) -->
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>IVA (16%):</span>
+                        <span>
+                            {% widthratio pedido.total 1 0.16 as iva %}
+                            ${{ iva }}
+                        </span>
+                    </div>
+                    
+                    <hr>
+                    <div class="d-flex justify-content-between mb-2 fs-5 fw-bold">
+                        <span>Total:</span>
+                        <span>${{ pedido.total }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información de Dirección -->
+    {% if pedido.direccion_calle %}
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0">📍 Dirección de Entrega</h5>
+        </div>
+        <div class="card-body">
+            <p class="mb-1"><strong>{{ pedido.direccion_calle }} #{{ pedido.direccion_numero_exterior }}</strong>
+                {% if pedido.direccion_numero_interior %}Int. {{ pedido.direccion_numero_interior }}{% endif %}
+            </p>
+            <p class="mb-1">{{ pedido.direccion_colonia }}</p>
+            <p class="mb-1">{{ pedido.direccion_ciudad }}, {{ pedido.direccion_estado }}</p>
+            <p class="mb-0">C.P. {{ pedido.direccion_codigo_postal }}</p>
+            {% if pedido.direccion_referencias %}
+            <p class="mt-2"><strong>Referencias:</strong> {{ pedido.direccion_referencias }}</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Acciones -->
+    {% if pedido.estado == 'pendiente' %}
+    <div class="card mt-4 border-warning">
+        <div class="card-body text-center">
+            <p class="mb-3">¿Necesitas modificar tu pedido?</p>
+            <form method="post" action="{% url 'cancelar_pedido' pedido.id %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger" 
+                        onclick="return confirm('¿Estás seguro de que quieres cancelar este pedido?')">
+                    ❌ Cancelar Pedido
+                </button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Información de Pago -->
+    {% if pedido.tarjeta_ultimos_digitos %}
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0">💳 Información de Pago</h5>
+        </div>
+        <div class="card-body">
+            <p class="mb-1"><strong>Tarjeta terminada en:</strong> **** {{ pedido.tarjeta_ultimos_digitos }}</p>
+            {% if pedido.tarjeta_tipo %}
+            <p class="mb-0"><strong>Tipo:</strong> {{ pedido.tarjeta_tipo }}</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

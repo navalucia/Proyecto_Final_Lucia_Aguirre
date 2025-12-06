@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Mis Favoritos - Skincare Shop{% endblock %}
+
+{% block content %}
+<h1 class="text-center mb-4">Mis Productos Favoritos</h1>
+
+{% if favoritos %}
+<div class="row">
+    {% for favorito in favoritos %}
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow">
+            <img src="{{ favorito.producto.foto.url }}" class="card-img-top" alt="{{ favorito.producto.nombre }}" style="height: 250px; object-fit: cover;">
+            <div class="card-body">
+                <h5 class="card-title">{{ favorito.producto.nombre }}</h5>
+                <p class="card-text text-muted">{{ favorito.producto.descripcion|truncatewords:20 }}</p>
+                <p class="card-text"><strong>${{ favorito.producto.precio }}</strong></p>
+                <p class="card-text">
+                    <small class="text-muted">Stock: {{ favorito.producto.stock }}</small>
+                </p>
+            </div>
+            <div class="card-footer bg-transparent">
+                <form method="post" action="{% url 'agregar_carrito' favorito.producto.id %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-pink btn-sm">🛒 Agregar al carrito</button>
+                </form>
+                <form method="post" action="{% url 'eliminar_favorito' favorito.id %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger btn-sm">❌ Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5">
+    <h3 class="text-muted">No tienes productos favoritos</h3>
+    <p class="text-muted">¡Descubre nuestros productos y añade algunos a tus favoritos!</p>
+    <a href="{% url 'index' %}" class="btn btn-pink">Seguir Comprando</a>
+</div>
+{% endif %}
+{% endblock %}

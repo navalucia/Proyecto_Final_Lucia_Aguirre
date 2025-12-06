@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Panel de Administración{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="admin-panel">
+    <!-- Header del Admin -->
+    <div class="admin-header">
+        <h1>⚙️ Panel de Administración</h1>
+        <p>Bienvenido, {{ user.username }}</p>
+    </div>
+
+    <!-- Estadísticas Rápidas -->
+    <div class="admin-stats">
+        <div class="stat-card">
+            <div class="stat-icon">📦</div>
+            <div class="stat-info">
+                <h3>{{ total_productos }}</h3>
+                <p>Productos Totales</p>
+            </div>
+            <a href="{% url 'admin_productos' %}" class="stat-link">Ver todos</a>
+        </div>
+
+        <div class="stat-card success">
+            <div class="stat-icon">👥</div>
+            <div class="stat-info">
+                <h3>{{ total_usuarios }}</h3>
+                <p>Usuarios Registrados</p>
+            </div>
+            <a href="{% url 'admin_usuarios' %}" class="stat-link">Ver todos</a>
+        </div>
+
+        <div class="stat-card warning">
+            <div class="stat-icon">🛒</div>
+            <div class="stat-info">
+                <h3>{{ total_pedidos }}</h3>
+                <p>Pedidos Activos</p>
+            </div>
+            <a href="#" class="stat-link">Ver todos</a>
+        </div>
+
+        <div class="stat-card info">
+            <div class="stat-icon">💰</div>
+            <div class="stat-info">
+                <h3>${{ ingresos_totales }}</h3>
+                <p>Ingresos Totales</p>
+            </div>
+            <a href="#" class="stat-link">Ver reportes</a>
+        </div>
+    </div>
+
+    <!-- Acciones Rápidas -->
+    <div class="admin-actions">
+        <h2>🚀 Acciones Rápidas</h2>
+        <div class="action-grid">
+            <a href="{% url 'admin_productos' %}" class="action-card">
+                <div class="action-icon">📦</div>
+                <h3>Gestionar Productos</h3>
+                <p>Agregar, editar o eliminar productos del catálogo</p>
+            </a>
+
+            <a href="{% url 'admin_usuarios' %}" class="action-card">
+                <div class="action-icon">👥</div>
+                <h3>Gestionar Usuarios</h3>
+                <p>Ver y administrar usuarios registrados</p>
+            </a>
+
+            <a href="#" class="action-card">
+                <div class="action-icon">🛒</div>
+                <h3>Ver Pedidos</h3>
+                <p>Revisar y gestionar pedidos de clientes</p>
+                <span class="admin-badge">3</span>
+            </a>
+
+            <a href="#" class="action-card">
+                <div class="action-icon">📊</div>
+                <h3>Reportes</h3>
+                <p>Ver estadísticas y reportes detallados</p>
+            </a>
+
+            <a href="#" class="action-card">
+                <div class="action-icon">🏷️</div>
+                <h3>Categorías</h3>
+                <p>Gestionar categorías de productos</p>
+            </a>
+
+            <a href="#" class="action-card">
+                <div class="action-icon">⚙️</div>
+                <h3>Configuración</h3>
+                <p>Ajustes generales del sistema</p>
+            </a>
+        </div>
+    </div>
+
+    <!-- Última Actividad -->
+    <div class="recent-activity">
+        <h2>📋 Actividad Reciente</h2>
+        <div class="activity-list">
+            <div class="activity-item">
+                <div class="activity-icon">➕</div>
+                <div class="activity-content">
+                    <p><strong>Nuevo producto agregado</strong></p>
+                    <small>Hace 2 horas - iPhone 15 Pro</small>
+                </div>
+            </div>
+
+            <div class="activity-item">
+                <div class="activity-icon">👥</div>
+                <div class="activity-content">
+                    <p><strong>Nuevo usuario registrado</strong></p>
+                    <small>Hace 4 horas - maria.gonzalez</small>
+                </div>
+            </div>
+
+            <div class="activity-item">
+                <div class="activity-icon">🛒</div>
+                <div class="activity-content">
+                    <p><strong>Pedido completado</strong></p>
+                    <small>Hace 6 horas - Orden #00123</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

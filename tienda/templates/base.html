@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Skincare Shop{% endblock %}</title>
+    
+    {% load static %}
+    
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-container">
+            <a href="{% url 'index' %}" class="logo">Skincare Shop</a>
+            
+            <div class="header-icons">
+                <!-- Carrito y Favoritos para usuarios normales -->
+                {% if user.is_authenticated and not es_administrador %}
+                <div class="nav-icons">
+                    <a href="{% url 'carrito' %}" class="nav-icon">
+                        🛒 <span class="icon-text">Carrito</span>
+                    </a>
+                    
+                    <a href="{% url 'favoritos' %}" class="nav-icon">
+                        ❤️ <span class="icon-text">Favoritos </span>
+                    </a>
+                </div>
+                {% endif %}
+                
+                <!-- Cuenta Dropdown -->
+                <div class="account-menu">
+                    {% if user.is_authenticated %}
+                        <button class="account-btn" onclick="toggleDropdown()">
+                            {% if es_administrador %}
+                                👤 Admin: {{ user.username }}
+                            {% else %}
+                                👤 Mi Cuenta
+                            {% endif %}
+                        </button>
+                        <div class="dropdown-menu" id="dropdownMenu">
+                            <!-- Opción de Administración SOLO para administradores -->
+                            {% if es_administrador %}
+                                <a class="dropdown-item" href="{% url 'admin_dashboard' %}">
+                                    ⚙️ Panel Admin
+                                </a>
+                                <a class="dropdown-item" href="{% url 'admin_cambiar_password' %}">
+                                    🔒 Cambiar Contraseña
+                                </a>
+                            {% else %}
+                                <a class="dropdown-item" href="{% url 'mis_pedidos' %}">
+                                    📦 Mis Pedidos
+                                </a>
+                                
+                            {% endif %}
+                            
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="{% url 'logout' %}">
+                                🚪 Cerrar Sesión
+                            </a>
+                        </div>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="btn btn-outline">👤 Cuenta</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation - SOLO PARA USUARIOS NORMALES, NO ADMINISTRADORES -->
+    {% if not es_administrador %}
+    <nav class="nav">
+        <div class="nav-container">
+            <ul class="nav-list">
+                <li>
+                    <a class="nav-link" href="{% url 'index' %}">🏠 Inicio</a>
+                </li>
+                <!-- ACTUALIZADO: Nuevas URLs con subcategorías -->
+                <li><a class="nav-link" href="{% url 'productos_limpiadores' %}">🧼 Limpiadores Faciales</a></li>
+                <li><a class="nav-link" href="{% url 'productos_cremas' %}">🧴 Cremas</a></li>
+                <li><a class="nav-link" href="{% url 'productos_cuidado_solar' %}">☀️ Cuidado Solar</a></li>
+                <li><a class="nav-link" href="{% url 'productos_maquillaje' %}">💄 Maquillaje</a></li>
+                <li><a class="nav-link" href="{% url 'productos_mascarillas' %}">🎭 Mascarillas</a></li>
+            </ul>
+        </div>
+    </nav>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                    <button type="button" class="modal-close" onclick="this.parentElement.style.display='none'">&times;</button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; Aguirre Nava Fernanda Lucia 5ºJ. Todos los derechos reservados.</p>
+            <p>Construye Aplicaciones Web</p>
+        </div>
+    </footer>
+
+    <script src="{% static 'js/main.js' %}"></script>
+    <script>
+        function toggleDropdown() {
+            const dropdown = document.getElementById('dropdownMenu');
+            dropdown.classList.toggle('show');
+        }
+
+        // Cerrar dropdown al hacer click fuera
+        window.onclick = function(event) {
+            if (!event.target.matches('.account-btn')) {
+                const dropdowns = document.getElementsByClassName("dropdown-menu");
+                for (let i = 0; i < dropdowns.length; i++) {
+                    const openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>

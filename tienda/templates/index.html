@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Inicio - Skincare Shop{% endblock %}
+
+{% block content %}
+{% if es_administrador %}
+<div class="card p-4 text-center">
+    <h2>Panel de Administración</h2>
+    <p>Bienvenido al sistema de administración de Skincare Shop</p>
+    <div class="btn-group justify-content-center">
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-primary">Ir al Dashboard</a>
+        <a href="{% url 'admin_productos' %}" class="btn btn-outline">Gestionar Productos</a>
+    </div>
+</div>
+{% else %}
+<div class="row mb-4">
+    <div class="col-6">
+        <img src="{% static 'img/skincare.jpeg' %}" alt="Productos de Skincare" class="w-100" style="border-radius: 12px;">
+    </div>
+</div>
+
+<div class="card p-4 mb-4 text-center">
+    <p class="card-text">
+        Tenemos una amplia gama de productos para tu rutina de cuidado de la piel, 
+        así como tratamientos para el acné, productos de maquillaje, cosméticos, 
+        bloqueadores, mascarillas, limpiadores, tónicos, cremas hidratantes y más.
+        <br><br>
+        <strong style="color: var(--color-primary);">¡Bienvenidos!</strong>
+    </p>
+</div>
+
+<!-- ACTUALIZADO: Productos Destacados (seleccionados manualmente desde admin) -->
+<h2 class="text-center mb-4" style="color: var(--color-primary);">⭐ Productos Destacados</h2>
+
+<div class="row">
+    {% for producto in productos_destacados %}
+    <div class="col-md-3 mb-4">
+        <div class="card h-100 shadow">
+            <img src="{{ producto.foto.url }}" class="card-img-top" alt="{{ producto.nombre }}" style="height: 200px; object-fit: cover;">
+            <div class="card-body">
+                <h5 class="card-title">{{ producto.nombre }}</h5>
+                <p class="card-text text-muted">{{ producto.descripcion|truncatewords:15 }}</p>
+                <p class="card-text"><strong>${{ producto.precio }}</strong></p>
+                <p class="card-text">
+                    <small class="text-muted">Stock: {{ producto.stock }}</small>
+                </p>
+            </div>
+            <div class="card-footer bg-transparent">
+                {% if user.is_authenticated %}
+                    {% if producto.stock > 0 %}
+                    <form method="post" action="{% url 'agregar_carrito' producto.id %}" class="d-inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="cantidad" value="1">
+                        <button type="submit" class="btn btn-pink btn-sm">🛒 Carrito</button>
+                    </form>
+                    <form method="post" action="{% url 'agregar_favorito' producto.id %}" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-pink btn-sm">❤️ Favorito</button>
+                    </form>
+                    {% else %}
+                    <button class="btn btn-secondary btn-sm" disabled>Sin Stock</button>
+                    {% endif %}
+                {% else %}
+                <a href="{% url 'login' %}" class="btn btn-pink btn-sm">Iniciar sesión para comprar</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-4">
+        <h4 class="text-muted">No hay productos destacados aún</h4>
+        <p class="text-muted"><small>Los administradores pueden marcar productos como destacados desde el panel.</small></p>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Sección de Categorías -->
+<h2 class="text-center mb-4" style="color: var(--color-primary);">Explora Nuestras Categorías</h2>
+<div class="row text-center">
+    <div class="col-md-2 mb-3">
+        <a href="{% url 'productos_limpiadores' %}" class="category-link">
+            <div class="category-icon">🧼</div>
+            <p>Limpiadores</p>
+        </a>
+    </div>
+    <div class="col-md-2 mb-3">
+        <a href="{% url 'productos_cremas' %}" class="category-link">
+            <div class="category-icon">🧴</div>
+            <p>Cremas</p>
+        </a>
+    </div>
+    <div class="col-md-2 mb-3">
+        <a href="{% url 'productos_cuidado_solar' %}" class="category-link">
+            <div class="category-icon">☀️</div>
+            <p>Cuidado Solar</p>
+        </a>
+    </div>
+    <div class="col-md-2 mb-3">
+        <a href="{% url 'productos_maquillaje' %}" class="category-link">
+            <div class="category-icon">💄</div>
+            <p>Maquillaje</p>
+        </a>
+    </div>
+    <div class="col-md-2 mb-3">
+        <a href="{% url 'productos_mascarillas' %}" class="category-link">
+            <div class="category-icon">🎭</div>
+            <p>Mascarillas</p>
+        </a>
+    </div>
+</div>
+{% endif %}
+
+
+{% endblock %}
